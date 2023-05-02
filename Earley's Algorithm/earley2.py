@@ -9,6 +9,7 @@ afiseaza derivarile acelui sir plecand din simbolul de start.
 
 from typing import List, Set
 
+
 class Production:
     def __init__(self, *components):
         self.components = components
@@ -24,6 +25,9 @@ class Production:
 
     def __hash__(self):
         return hash(self.components)
+    
+    def __str__(self) -> str:
+        return " ".join(str(comp) for comp in self.components)
 
 
 class Rule(object):
@@ -73,6 +77,7 @@ class State(object):
             return None
         return self.production[self.dot_index]
 
+
 class Node(object):
     def __init__(self, value, children):
         self.value = value
@@ -84,6 +89,9 @@ class Node(object):
             child.print(level + 1)
 
 
+EarleyStates = List[List[State]]
+
+
 class EarleyParser:
     START_RULE = "@P"
 
@@ -91,9 +99,9 @@ class EarleyParser:
     # in care se itereaza printr un set si acestuia i se adauga noi elemente
     # din loop body.
     states_set: List[Set[State]]
-    states: List[List[State]]
+    states: EarleyStates
 
-    root_rule: Rule;
+    root_rule: Rule
 
     def __init__(self, root_rule: Rule) -> None:
         self.root_rule = root_rule
@@ -187,9 +195,25 @@ class EarleyParser:
         return results
 
 
+def print_states(states: EarleyStates):
+    states_len = len(states)
+    for state_idx in range(0, states_len):
+        print("S({}): ".format(state_idx))
+
+        for state_value_idx, state_value in enumerate(states[state_idx]):
+            print(
+                "{}: production={}, origin_state_idx={}, finish_state_idx:{}".format(
+                    state_value_idx, state_value.production, state_value.origin_idx, state_value.finish_idx
+                )
+            )
+        print("=" * 30)
+
+
 if __name__ == '__main__':
-    NUMBER = Rule("NUMBER", Production("1"), Production(
-        "2"), Production("3"), Production("4"))
+    NUMBER = Rule(
+        "NUMBER",
+        Production("1"), Production("2"), Production("3"), Production("4")
+    )
 
     # Le definim si pe acestea pt ca ele vor reprezenta noduri atunci cand se va afisa
     # arborele cu derivarile.
@@ -209,6 +233,14 @@ if __name__ == '__main__':
 
     parser = EarleyParser(S)
 
-    q0 = parser.parse(words)
-    forest = parser.get_derivation_trees(q0)
-    forest[0].print()
+    try:
+        parser_root_rule = parser.parse(words)
+
+        print('The string is accepted by the grammar:')
+        forest = parser.get_derivation_trees(parser_root_rule)
+        forest[0].print()
+    except:
+        print('The string is not accepted by the grammar.')
+    finally:
+        print("\nThe states table:")
+        print_states(parser.states)

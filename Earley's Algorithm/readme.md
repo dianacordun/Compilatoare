@@ -10,7 +10,7 @@
 - [ ] take in a variable number of input strings
 - [x] implement Earley's algorithm
 - [ ] handle lambda-productions
-- [ ] generate Earley tables for a given input string
+- [x] print Earley table for a given input string
 - [x] check if an input strings is accepted by the grammar
   - [x] if yes, show the derivations
 - [ ] try out other examples
