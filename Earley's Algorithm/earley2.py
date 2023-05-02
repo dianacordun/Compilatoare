@@ -8,7 +8,7 @@ afiseaza derivarile acelui sir plecand din simbolul de start.
 """
 
 from typing import List, Set
-
+import sys
 
 class Production:
     def __init__(self, *components):
@@ -233,14 +233,21 @@ if __name__ == '__main__':
 
     parser = EarleyParser(S)
 
-    try:
-        parser_root_rule = parser.parse(words)
+    for raw_words in sys.stdin:
+        words = raw_words.strip()
+        if not len(words):
+            break
 
-        print('The string is accepted by the grammar:')
-        forest = parser.get_derivation_trees(parser_root_rule)
-        forest[0].print()
-    except:
-        print('The string is not accepted by the grammar.')
-    finally:
-        print("\nThe states table:")
-        print_states(parser.states)
+        try:
+            parser_root_rule = parser.parse(words)
+
+            print('The string is accepted by the grammar:')
+            forest = parser.get_derivation_trees(parser_root_rule)
+            forest[0].print()
+        except:
+            print('The string is not accepted by the grammar.')
+        finally:
+            print("\nThe states table:")
+            print_states(parser.states)
+        
+

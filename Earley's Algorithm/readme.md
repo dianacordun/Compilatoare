@@ -7,7 +7,7 @@
 ## Todos
 
 - [ ] ? load grammar(use a dictionary)
-- [ ] take in a variable number of input strings
+- [x] take in a variable number of input strings
 - [x] implement Earley's algorithm
 - [ ] handle lambda-productions
 - [x] print Earley table for a given input string
