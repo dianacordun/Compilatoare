@@ -146,7 +146,7 @@ class EarleyParser:
                 new_state.finish_idx = word_idx
 
     def parse(self, raw_words: str):
-        words = raw_words.strip().lower().split()
+        words = list(filter(lambda ch: len(ch.strip()) != 0, list(raw_words.strip().lower())))
         words_len = len(words)
 
         self.states_set = [set() for i in range(0, words_len + 1)]
@@ -226,12 +226,27 @@ if __name__ == '__main__':
     S = Rule("S")
     S.add(Production(S, PLUS, M), Production(M))
 
-    words = "2 + 3 * 4"
-    # words = "2 + 3 * 4 + 1"
-    # words = "1 + 2 + 3 * 4"
-    # words = "2 + 3 * 4 * 1"
 
-    parser = EarleyParser(S)
+    # https://en.wikipedia.org/wiki/Formal_grammar#:~:text=A%20formal%20grammar%20is%20defined,a%20branch%20of%20applied%20mathematics.
+    a = Rule("a", Production("a"))
+    b = Rule("b", Production("b"))
+    S1 = Rule("S1")
+    S1.add(Production(a, S1))
+    S1.add(Production(b, S1))
+    S1.add(Production(a))
+    S1.add(Production(b))
+
+    """
+    Exemple: 
+      * "2 + 3 * 4"
+      * "2 + 3 * 4 + 1"
+      * "1 + 2 + 3 * 4"
+      * "2 + 3 * 4 * 1"
+    """
+    # parser = EarleyParser(S)
+
+    # Exemple: `a`, `aab`, `ababa`.
+    parser = EarleyParser(S1)
 
     for raw_words in sys.stdin:
         words = raw_words.strip()
@@ -243,7 +258,7 @@ if __name__ == '__main__':
 
             print('The string is accepted by the grammar:')
             forest = parser.get_derivation_trees(parser_root_rule)
-            forest[0].print()
+            forest[-1].print()
         except:
             print('The string is not accepted by the grammar.')
         finally:
