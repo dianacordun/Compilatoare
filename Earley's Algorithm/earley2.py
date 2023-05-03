@@ -10,6 +10,7 @@ afiseaza derivarile acelui sir plecand din simbolul de start.
 from typing import List, Set
 import sys
 
+
 class Production:
     def __init__(self, *components):
         self.components = components
@@ -25,7 +26,7 @@ class Production:
 
     def __hash__(self):
         return hash(self.components)
-    
+
     def __str__(self) -> str:
         return " ".join(str(comp) for comp in self.components)
 
@@ -54,10 +55,13 @@ class State(object):
         self.dot_index = dot_index
         self.rules = [t for t in production if isinstance(t, Rule)]
 
+        if self.get_next_component() == EarleyParser.EPSILON:
+            self.dot_index += 1
+
     def __repr__(self):
         terms = [str(p) for p in self.production]
-        terms.insert(self.dot_index, u"$")
-        return "%-5s -> %-16s [%s-%s]" % (self.name, " ".join(terms), self.origin_idx, self.finish_idx)
+        terms.insert(self.dot_index, "•")
+        return "{} -> {}".format(self.name, "".join(terms))
 
     def __eq__(self, other: 'State'):
         return (self.name, self.production, self.dot_index, self.origin_idx) == \
@@ -94,6 +98,7 @@ EarleyStates = List[List[State]]
 
 class EarleyParser:
     START_RULE = "@P"
+    EPSILON = "ε"
 
     # Avem nevoie separat de `List` si `Set` pentru ca se arunca o eroare in momentul
     # in care se itereaza printr un set si acestuia i se adauga noi elemente
@@ -146,7 +151,12 @@ class EarleyParser:
                 new_state.finish_idx = word_idx
 
     def parse(self, raw_words: str):
-        words = list(filter(lambda ch: len(ch.strip()) != 0, list(raw_words.strip().lower())))
+        words = list(
+            filter(
+                lambda ch: len(ch.strip()) != 0,
+                list(raw_words.strip().lower())
+            )
+        )
         words_len = len(words)
 
         self.states_set = [set() for i in range(0, words_len + 1)]
@@ -219,23 +229,10 @@ if __name__ == '__main__':
     # arborele cu derivarile.
     PLUS = Rule("+", Production("+"))
     MULTIPLY = Rule("*", Production("*"))
-
     M = Rule("M")
     M.add(Production(M, MULTIPLY, NUMBER), Production(NUMBER))
-
     S = Rule("S")
     S.add(Production(S, PLUS, M), Production(M))
-
-
-    # https://en.wikipedia.org/wiki/Formal_grammar#:~:text=A%20formal%20grammar%20is%20defined,a%20branch%20of%20applied%20mathematics.
-    a = Rule("a", Production("a"))
-    b = Rule("b", Production("b"))
-    S1 = Rule("S1")
-    S1.add(Production(a, S1))
-    S1.add(Production(b, S1))
-    S1.add(Production(a))
-    S1.add(Production(b))
-
     """
     Exemple: 
       * "2 + 3 * 4"
@@ -245,8 +242,26 @@ if __name__ == '__main__':
     """
     # parser = EarleyParser(S)
 
+    # https://en.wikipedia.org/wiki/Formal_grammar#:~:text=A%20formal%20grammar%20is%20defined,a%20branch%20of%20applied%20mathematics.
+    a = Rule("a", Production("a"))
+    b = Rule("b", Production("b"))
+    S1 = Rule("S1")
+    S1.add(Production(a, S1))
+    S1.add(Production(b, S1))
+    S1.add(Production(a))
+    S1.add(Production(b))
     # Exemple: `a`, `aab`, `ababa`.
     parser = EarleyParser(S1)
+
+    # Gramatica ce contine lambda-productii.
+    e = Rule(EarleyParser.EPSILON, EarleyParser.EPSILON)
+    b = Rule("b", Production("b"))
+    A = Rule("A")
+    S2 = Rule("S2")
+    A.add(Production(b, b), Production(e), Production(S2))
+    S2.add(Production(a, A, b))
+    # Exemple: `ab`, `abbb`.
+    # parser = EarleyParser(S2)
 
     for raw_words in sys.stdin:
         words = raw_words.strip()
@@ -264,5 +279,3 @@ if __name__ == '__main__':
         finally:
             print("\nThe states table:")
             print_states(parser.states)
-        
-
