@@ -1,4 +1,6 @@
 """
+ECHIPA PROIECT (TEMA 1, PROIECT 2): Cordun Diana-Alexandra, Gatej Sergiu-Andrei
+
 Sa se scrie un program pentru implementarea algoritmului de analiza sintactica Earley.
 Programul primeste la intrare elementele unei gramatici independente de context oarecare, inclusiv cu lambda-productii.
 Programul accepta un numar oarecare de siruri peste alfabetul terminalilor.
@@ -18,6 +20,8 @@ class Production:
     def __len__(self):
         return len(self.components)
 
+    # production[index], production = Production()
+    # M -> M * NUMBER; components =[M, *, NUMBER]
     def __getitem__(self, index):
         return self.components[index]
 
@@ -220,6 +224,7 @@ def print_states(states: EarleyStates):
 
 
 if __name__ == '__main__':
+    # NUMBER -> 1 | 2 | 3 | 4.
     NUMBER = Rule(
         "NUMBER",
         Production("1"), Production("2"), Production("3"), Production("4")
@@ -227,10 +232,14 @@ if __name__ == '__main__':
 
     # Le definim si pe acestea pt ca ele vor reprezenta noduri atunci cand se va afisa
     # arborele cu derivarile.
+    # + -> +
     PLUS = Rule("+", Production("+"))
     MULTIPLY = Rule("*", Production("*"))
+
+    # M -> M * NUMBER | NUMBER
     M = Rule("M")
     M.add(Production(M, MULTIPLY, NUMBER), Production(NUMBER))
+    
     S = Rule("S")
     S.add(Production(S, PLUS, M), Production(M))
     """
@@ -240,7 +249,7 @@ if __name__ == '__main__':
       * "1 + 2 + 3 * 4"
       * "2 + 3 * 4 * 1"
     """
-    # parser = EarleyParser(S)
+    parser = EarleyParser(S)
 
     # https://en.wikipedia.org/wiki/Formal_grammar#:~:text=A%20formal%20grammar%20is%20defined,a%20branch%20of%20applied%20mathematics.
     a = Rule("a", Production("a"))
@@ -251,15 +260,15 @@ if __name__ == '__main__':
     S1.add(Production(a))
     S1.add(Production(b))
     # Exemple: `a`, `aab`, `ababa`.
-    parser = EarleyParser(S1)
+    # parser = EarleyParser(S1)
 
     # Gramatica ce contine lambda-productii.
     e = Rule(EarleyParser.EPSILON, EarleyParser.EPSILON)
     b = Rule("b", Production("b"))
-    A = Rule("A")
-    S2 = Rule("S2")
-    A.add(Production(b, b), Production(e), Production(S2))
-    S2.add(Production(a, A, b))
+    A = Rule("A") # A -> ?
+    S2 = Rule("S2") # S2 -> ?
+    A.add(Production(b, b), Production(e), Production(S2)) # A -> bb | e | S2
+    S2.add(Production(a, A, b)) # S2 -> aAb
     # Exemple: `ab`, `abbb`.
     # parser = EarleyParser(S2)
 
